@@ -1,5 +1,5 @@
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from config import CHUNK_SIZE, CHUNK_OVERLAP
+from ingestion_config import CHUNK_SIZE, CHUNK_OVERLAP
 import hashlib
 
 _splitter = RecursiveCharacterTextSplitter(
