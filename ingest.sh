@@ -51,7 +51,7 @@ echo "📦 Activating ingestion environment..."
 source codebase/ingestion/venv/bin/activate
 
 # Build command
-CMD="python codebase/ingestion/main.py"
+CMD="python3 codebase/ingestion/main.py"
 if [ -n "$DIR" ]; then
     CMD="$CMD --dir $DIR"
 fi
