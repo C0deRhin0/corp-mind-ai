@@ -27,7 +27,7 @@ fi
 echo "  → Starting Backend..."
 cd "$(dirname "$0")/codebase/backend"
 source venv/bin/activate
-nohup python -m uvicorn main:app --host 0.0.0.0 --port 8000 > /tmp/backend.log 2>&1 &
+nohup python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 > /tmp/backend.log 2>&1 &
 cd ../..
 
 # Start Frontend
