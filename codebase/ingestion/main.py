@@ -15,7 +15,7 @@ from loader import load_document
 from chunker import chunk_pages
 from embedder import embed
 from qdrant_writer import ensure_collection, upsert_chunks, collection_stats
-from config import DOCS_DIR
+from ingestion_config import DOCS_DIR
 
 def ingest_file(path: Path) -> dict:
     print(f"\n📄 Processing: {path.name}")
@@ -43,7 +43,7 @@ def main():
 
     if args.reset:
         from qdrant_client import QdrantClient
-        from config import QDRANT_URL, COLLECTION_NAME
+        from ingestion_config import QDRANT_URL, COLLECTION_NAME
         client = QdrantClient(url=QDRANT_URL)
         try:
             client.delete_collection(COLLECTION_NAME)
