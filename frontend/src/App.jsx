@@ -1,13 +1,31 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import ChatPanel from './components/ChatPanel'
 import SourcePanel from './components/SourcePanel'
+import AdminPage from './pages/AdminPage'
 
 function App() {
   const [messages, setMessages] = useState([])
   const [activeSources, setActiveSources] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [page, setPage] = useState('chat')
+  const [conversationId, setConversationId] = useState(null)
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash
+      setPage(hash === '#/admin' ? 'admin' : 'chat')
+    }
+
+    handleHashChange()
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
 
   const handleAsk = async (question) => {
+    const { createConversationIfNeeded } = await import('./api/history')
+    const convoId = await createConversationIfNeeded(conversationId, question)
+    setConversationId(convoId)
+
     const userMsg = { id: Date.now(), role: 'user', content: question }
     const assistantMsg = { id: Date.now() + 1, role: 'assistant', content: '', isStreaming: true, error: false }
     
@@ -19,6 +37,7 @@ function App() {
     
     askStream({
       question,
+      conversationId: convoId,
       onToken: (token) => {
         setMessages(prev => prev.map(m => 
           m.id === assistantMsg.id 
@@ -56,6 +75,11 @@ function App() {
   const handleClearChat = () => {
     setMessages([])
     setActiveSources(null)
+    setConversationId(null)
+  }
+
+  if (page === 'admin') {
+    return <AdminPage />
   }
 
   return (
@@ -66,19 +90,29 @@ function App() {
             <span style={{ color: '#0096FF', fontWeight: 'bold', fontSize: '18px' }}>NuecAI</span>
             <span style={{ marginLeft: '12px', color: '#666' }}>Corporate Mind</span>
           </div>
-          {messages.length > 0 && (
-            <button 
-              onClick={handleClearChat}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { window.location.hash = '#/admin' }}
               className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded border border-gray-300 hover:bg-gray-100"
             >
-              Clear Chat
+              Admin
             </button>
-          )}
+            {messages.length > 0 && (
+              <button 
+                onClick={handleClearChat}
+                className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded border border-gray-300 hover:bg-gray-100"
+              >
+                Clear Chat
+              </button>
+            )}
+          </div>
         </header>
         <ChatPanel 
           messages={messages} 
           onAsk={handleAsk} 
           isLoading={isLoading}
+          onClearChat={handleClearChat}
+          conversationId={conversationId}
         />
       </div>
       <div className="flex-[4] overflow-y-auto bg-gray-50">
