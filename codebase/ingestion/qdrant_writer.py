@@ -4,7 +4,7 @@ from qdrant_client.models import (
     PointStruct, SparseVector, Batch
 )
 from qdrant_client.models import models as qmodels
-from config import QDRANT_URL, COLLECTION_NAME, VECTOR_SIZE, UPSERT_BATCH_SIZE
+from ingestion_config import QDRANT_URL, COLLECTION_NAME, VECTOR_SIZE, UPSERT_BATCH_SIZE
 import uuid
 
 _client: QdrantClient | None = None
