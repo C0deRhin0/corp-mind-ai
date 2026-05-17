@@ -37,10 +37,10 @@ ollama pull llama3.2:3b
 
 ### Python Virtual Environment
 
-The backend uses a virtual environment at `codebase/backend/venv/`. If it doesn't exist:
+The backend uses a virtual environment at `backend/venv/`. If it doesn't exist:
 
 ```bash
-cd codebase/backend
+cd backend
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -52,12 +52,12 @@ pip install -r requirements.txt
 
 ```bash
 # 1. Start everything (Ollama, Qdrant, Backend, Frontend)
-./start.sh
+./scripts/start.sh
 
 # 2. Ingest your documents
-./ingest.sh --dir /path/to/your/documents
+./scripts/ingest.sh --dir /path/to/your/documents
 
-# 3. Open http://localhost:5173 in your browser
+# 3. Open http://localhost:5174 in your browser
 ```
 
 ---
@@ -67,19 +67,19 @@ pip install -r requirements.txt
 ### Start All Services
 
 ```bash
-./start.sh
+./scripts/start.sh
 ```
 
 This one command will:
 - Start Ollama (if not running)
 - Start Qdrant in Docker (if not running)
-- Start the FastAPI backend on port 8000
-- Start the Vite frontend on port 5173
+- Start the FastAPI backend on port 8001
+- Start the Vite frontend on port 5174
 
 ### Stop Services
 
 ```bash
-./stop.sh
+./scripts/stop.sh
 ```
 
 This stops the Backend and Frontend. Ollama and Qdrant keep running (so they're ready next time).
@@ -88,9 +88,9 @@ This stops the Backend and Frontend. Ollama and Qdrant keep running (so they're 
 
 | Service | URL | Description |
 |---------|-----|-------------|
-| **App** | http://localhost:5173 | Main UI |
-| **API Docs** | http://localhost:8000/docs | FastAPI Swagger docs |
-| **Admin Panel** | http://localhost:5173/#/admin | Document management UI |
+| **App** | http://localhost:5174 | Main UI |
+| **API Docs** | http://localhost:8001/docs | FastAPI Swagger docs |
+| **Admin Panel** | http://localhost:5174/#/admin | Document management UI |
 | **Qdrant Dashboard** | http://localhost:6333/dashboard | Vector database UI |
 
 ---
@@ -109,13 +109,13 @@ This stops the Backend and Frontend. Ollama and Qdrant keep running (so they're 
 ### Ingest a Folder
 
 ```bash
-./ingest.sh --dir /path/to/your/documents
+./scripts/ingest.sh --dir /path/to/your/documents
 ```
 
 ### Ingest a Single File
 
 ```bash
-./ingest.sh --file /path/to/document.pdf
+./scripts/ingest.sh --file /path/to/document.pdf
 ```
 
 ### Reset and Re-ingest
@@ -123,7 +123,7 @@ This stops the Backend and Frontend. Ollama and Qdrant keep running (so they're 
 To delete all indexed data and start fresh:
 
 ```bash
-./ingest.sh --dir /path/to/documents --reset
+./scripts/ingest.sh --dir /path/to/documents --reset
 ```
 
 ### Example
@@ -135,7 +135,7 @@ cp ~/Documents/policy.pdf ~/company-docs/
 cp ~/Documents/handbook.md ~/company-docs/
 
 # Ingest them
-./ingest.sh --dir ~/company-docs
+./scripts/ingest.sh --dir ~/company-docs
 ```
 
 Expected output:
@@ -168,7 +168,7 @@ INGESTION COMPLETE
 
 ### Opening the App
 
-1. Open http://localhost:5173 in your browser
+1. Open http://localhost:5174 in your browser
 2. You'll see the two-panel layout with a NuecAI header
 
 ```
@@ -244,11 +244,11 @@ Confidence color coding:
 
 ## Admin Panel
 
-Access at: `http://localhost:5173/#/admin`
+Access at: `http://localhost:5174/#/admin`
 
 ### Login
 
-1. Navigate to http://localhost:5173/#/admin
+1. Navigate to http://localhost:5174/#/admin
 2. Enter the admin code from your `.env` file
 3. Click "Login"
 
@@ -327,7 +327,7 @@ To reduce latency and Ollama load, the backend caches answers for **2 hours**.
 The `/api/diagnostics` endpoint provides a health check for all services:
 
 ```bash
-curl http://localhost:8000/api/diagnostics
+curl http://localhost:8001/api/diagnostics
 ```
 
 Example response:
@@ -388,7 +388,7 @@ DOCS_DIR=./documents
 
 ### Change Ollama Model
 
-Edit `codebase/backend/config.py`:
+Edit `backend/config.py`:
 
 ```python
 OLLAMA_MODEL = "llama3.2:3b"  # Change to another installed Ollama model
@@ -398,25 +398,25 @@ OLLAMA_MODEL = "llama3.2:3b"  # Change to another installed Ollama model
 
 Edit **both** files — they MUST match:
 
-1. `codebase/ingestion/ingestion_config.py`:
+1. `ingestion/ingestion_config.py`:
 ```python
 EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
 VECTOR_SIZE = 384  # Must match the model's output dimension
 ```
 
-2. `codebase/backend/config.py`:
+2. `backend/config.py`:
 ```python
 EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"  # Must match ingestion
 ```
 
 After changing the embedding model, you **must** re-ingest all documents:
 ```bash
-./ingest.sh --dir /path/to/docs --reset
+./scripts/ingest.sh --dir /path/to/docs --reset
 ```
 
 ### Change Chunk Size
 
-Edit `codebase/ingestion/ingestion_config.py`:
+Edit `ingestion/ingestion_config.py`:
 
 ```python
 CHUNK_SIZE = 800        # Characters per chunk
@@ -425,7 +425,7 @@ CHUNK_OVERLAP = 150     # Overlap between consecutive chunks
 
 ### Change Retrieval Parameters
 
-Edit `codebase/backend/config.py`:
+Edit `backend/config.py`:
 
 ```python
 TOP_K = 10              # Number of chunks sent to the LLM
@@ -434,7 +434,7 @@ SCORE_THRESHOLD = 0.2   # Minimum relevance score (0.0 to 1.0)
 
 ### Change Cache TTL
 
-Edit `codebase/backend/api/routes_ask.py`:
+Edit `backend/api/routes_ask.py`:
 
 ```python
 CACHE_TTL_SECONDS = 7200  # 2 hours (change to any value in seconds)
@@ -468,7 +468,7 @@ cat /tmp/backend.log
 ### Admin Login Fails ("Admin code not configured")
 
 1. Check that `.env` exists in the project root with `ADMIN_CODE` set
-2. Restart the backend: `./stop.sh && ./start.sh`
+2. Restart the backend: `./scripts/stop.sh && ./scripts/start.sh`
 3. If it still fails, the `.env` file may not be loading — check that `load_dotenv()` runs before any config reads. The backend handles this, but module-level `os.getenv()` calls in `routes_admin.py` were moved into lazy functions to fix this exact issue.
 
 ### Qdrant Won't Start
@@ -496,10 +496,10 @@ ollama pull llama3.2:3b
 
 ### Chat Returns "I apologize, but I encountered an error"
 
-1. Check diagnostics: `curl http://localhost:8000/api/diagnostics`
+1. Check diagnostics: `curl http://localhost:8001/api/diagnostics`
 2. Verify all services show `"status": "ok"`
 3. Check the backend log: `cat /tmp/backend.log`
-4. Try the `/api/ask` endpoint directly via Swagger at http://localhost:8000/docs
+4. Try the `/api/ask` endpoint directly via Swagger at http://localhost:8001/docs
 5. Ensure documents have been ingested (Qdrant points > 0)
 
 ### No Documents Found
@@ -507,7 +507,7 @@ ollama pull llama3.2:3b
 Check that Qdrant has data:
 ```bash
 # Via API
-curl http://localhost:8000/api/diagnostics
+curl http://localhost:8001/api/diagnostics
 # Check the "points" field — should be > 0
 
 # Via Qdrant dashboard
@@ -518,17 +518,17 @@ curl http://localhost:8000/api/diagnostics
 
 1. Try re-phrasing your question
 2. Check if the embedding model matches between ingestion and backend:
-   - `codebase/ingestion/ingestion_config.py` — `EMBEDDING_MODEL`
-   - `codebase/backend/config.py` — `EMBEDDING_MODEL`
-3. Re-ingest documents after any config change: `./ingest.sh --dir /path/to/docs --reset`
-4. Clear the answer cache: `curl -X POST http://localhost:8000/api/cache/clear`
+   - `ingestion/ingestion_config.py` — `EMBEDDING_MODEL`
+   - `backend/config.py` — `EMBEDDING_MODEL`
+3. Re-ingest documents after any config change: `./scripts/ingest.sh --dir /path/to/docs --reset`
+4. Clear the answer cache: `curl -X POST http://localhost:8001/api/cache/clear`
 
 ### Port Already in Use
 
 ```bash
 # Find what's using the port
-lsof -i :8000  # for backend
-lsof -i :5173  # for frontend
+lsof -i :8001  # for backend
+lsof -i :5174  # for frontend
 lsof -i :6333  # for Qdrant
 
 # Kill the process
@@ -553,9 +553,9 @@ Subsequent requests will be much faster. The answer cache also helps with repeat
 ### Backend Development
 
 ```bash
-cd codebase/backend
+cd backend
 source venv/bin/activate
-python3 -m uvicorn main:app --reload --port 8000
+python3 -m uvicorn main:app --reload --port 8001
 ```
 
 ### Frontend Development
@@ -567,7 +567,7 @@ npm run dev
 
 ### View API Docs
 
-Go to http://localhost:8000/docs to see and test all API endpoints, including:
+Go to http://localhost:8001/docs to see and test all API endpoints, including:
 - `/api/ask` — Chat
 - `/api/ask/stream` — Streaming chat (SSE)
 - `/api/diagnostics` — Health check
@@ -580,7 +580,7 @@ Go to http://localhost:8000/docs to see and test all API endpoints, including:
 ### Run Ingestion Independently
 
 ```bash
-cd codebase/ingestion
+cd ingestion
 source venv/bin/activate
 python3 main.py --dir /path/to/docs
 ```

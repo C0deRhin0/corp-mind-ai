@@ -48,13 +48,13 @@ A secure, internal AI assistant (NuecAI) that answers questions using company do
 
 ```bash
 # 1. Start all services (Ollama, Qdrant, Backend, Frontend)
-./start.sh
+./scripts/start.sh
 
 # 2. Ingest your documents
-./ingest.sh --dir /path/to/your/docs
+./scripts/ingest.sh --dir /path/to/your/docs
 
 # 3. Open browser
-# http://localhost:5173
+# http://localhost:5174
 ```
 
 See [USAGE.md](USAGE.md) for detailed instructions.
@@ -63,39 +63,25 @@ See [USAGE.md](USAGE.md) for detailed instructions.
 
 ```
 corp-mind-ai/
-├── .env                        # Admin code, max file size, docs directory
-├── start.sh                    # Start all services (one command!)
-├── stop.sh                     # Stop all services
-├── ingest.sh                   # Ingest documents (--dir or --file)
-│
-├── codebase/
-│   ├── ingestion/              # Document ingestion pipeline (offline)
-│   │   ├── main.py             # CLI entrypoint
-│   │   ├── loader.py           # PDF/DOCX/TXT/MD parsing
-│   │   ├── chunker.py          # Text chunking (RecursiveCharacterTextSplitter)
-│   │   ├── embedder.py         # Generate embeddings (sentence-transformers)
-│   │   ├── qdrant_writer.py    # Create collection + upsert to Qdrant
-│   │   └── ingestion_config.py # Ingestion constants (chunk size, model name, vector dim)
-│   │
-│   └── backend/                # FastAPI server (always running)
-│       ├── main.py             # App entrypoint, CORS, load_dotenv
-│       ├── config.py           # Backend constants (model name, TOP_K, thresholds)
-│       │
-│       ├── api/
-│       │   ├── routes_ask.py   # POST /api/ask, GET /api/ask/stream, /api/diagnostics,
-│       │   │                   # /api/cache/stats, /api/cache/clear, /api/health
-│       │   └── routes_admin.py # /api/admin/* (login, documents, upload, delete, reset)
-│       │
-│       ├── services/
-│       │   └── document_ingestion.py  # Bridges backend admin routes to ingestion pipeline
-│       │
-│       ├── retrieval/
-│       │   ├── embedder.py         # Same model as ingestion (MUST MATCH)
-│       │   └── qdrant_retriever.py # Hybrid search: dense + sparse → RRF fusion
-│       │
-│       └── generation/
-│           └── llm.py          # Ollama streaming + prompt builder + system prompt
-│
+├── .env                        # Local admin code, max file size, docs directory (untracked)
+├── scripts/
+│   ├── start.sh                # Start all services (one command!)
+│   ├── stop.sh                 # Stop services
+│   └── ingest.sh               # Ingest documents (--dir or --file)
+├── backend/                    # FastAPI server (always running)
+│   ├── main.py                 # App entrypoint, CORS, load_dotenv
+│   ├── config.py               # Backend constants (model name, TOP_K, thresholds)
+│   ├── api/                    # API routes
+│   ├── services/               # Backend services and ingestion bridge
+│   ├── retrieval/              # Embedding and Qdrant retrieval
+│   └── generation/             # Ollama streaming and prompt construction
+├── ingestion/                  # Document ingestion pipeline (offline)
+│   ├── main.py                 # CLI entrypoint
+│   ├── loader.py               # PDF/DOCX/TXT/MD parsing
+│   ├── chunker.py              # Text chunking
+│   ├── embedder.py             # Generate embeddings
+│   ├── qdrant_writer.py        # Create collection + upsert to Qdrant
+│   └── ingestion_config.py     # Ingestion constants
 ├── frontend/                   # React UI (Vite)
 │   ├── src/
 │   │   ├── App.jsx             # Main layout, hash routing (chat ↔ admin)
@@ -111,6 +97,7 @@ corp-mind-ai/
 │   └── package.json
 │
 ├── docker-compose.dev.yml      # Qdrant-only Docker setup
+├── docker-compose.yml          # Full local compose setup
 ├── README.md
 └── USAGE.md
 ```
@@ -142,14 +129,14 @@ DOCS_DIR=./documents
 
 The embedding model must be **identical** in both config files:
 
-- `codebase/ingestion/ingestion_config.py` — `EMBEDDING_MODEL`
-- `codebase/backend/config.py` — `EMBEDDING_MODEL`
+- `ingestion/ingestion_config.py` — `EMBEDDING_MODEL`
+- `backend/config.py` — `EMBEDDING_MODEL`
 
 Current model: `BAAI/bge-small-en-v1.5` (384-dim)
 
 ### LLM Model
 
-Edit `codebase/backend/config.py`:
+Edit `backend/config.py`:
 
 ```python
 OLLAMA_MODEL = "llama3.2:3b"  # Change to any Ollama model
@@ -157,7 +144,7 @@ OLLAMA_MODEL = "llama3.2:3b"  # Change to any Ollama model
 
 ## Admin Panel
 
-Access at: `http://localhost:5173/#/admin`
+Access at: `http://localhost:5174/#/admin`
 
 | Feature | Description |
 |---------|-------------|
@@ -201,8 +188,9 @@ Access at: `http://localhost:5173/#/admin`
 
 | Service | URL |
 |---------|-----|
-| App (UI) | http://localhost:5173 |
-| API Docs (Swagger) | http://localhost:8000/docs |
+| App (UI) | http://localhost:5174 |
+| API Docs (Swagger) | http://localhost:8001/docs |
+| Full Docker Compose UI | http://localhost:3000 |
 | Qdrant Dashboard | http://localhost:6333/dashboard |
 
 ## License
