@@ -5,6 +5,7 @@ const API_BASE = '/api/admin'
 function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
+  const [adminCode, setAdminCode] = useState('')
   const [error, setError] = useState('')
   const [documents, setDocuments] = useState([])
   const [uploading, setUploading] = useState(false)
@@ -21,6 +22,7 @@ function AdminPage() {
       if (!resp.ok) {
         throw new Error('Invalid admin code')
       }
+      setAdminCode(password)
       setAuthenticated(true)
       setPassword('')
     } catch (err) {
@@ -29,7 +31,9 @@ function AdminPage() {
   }
 
   const fetchDocuments = async () => {
-    const resp = await fetch(`${API_BASE}/documents`)
+    const resp = await fetch(`${API_BASE}/documents`, {
+      headers: { 'X-Admin-Code': adminCode },
+    })
     const data = await resp.json()
     setDocuments(data.documents || [])
   }
@@ -43,6 +47,7 @@ function AdminPage() {
     }
     const resp = await fetch(`${API_BASE}/documents/upload`, {
       method: 'POST',
+      headers: { 'X-Admin-Code': adminCode },
       body: formData,
     })
     if (resp.ok) {
@@ -53,20 +58,29 @@ function AdminPage() {
 
   const handleDelete = async (filename) => {
     if (!confirm(`Delete ${filename}?`)) return
-    await fetch(`${API_BASE}/documents/${encodeURIComponent(filename)}`, { method: 'DELETE' })
+    await fetch(`${API_BASE}/documents/${encodeURIComponent(filename)}`, {
+      method: 'DELETE',
+      headers: { 'X-Admin-Code': adminCode },
+    })
     await fetchDocuments()
   }
 
   const handleReingest = async () => {
     setResetting(true)
-    await fetch(`${API_BASE}/documents/reingest`, { method: 'POST' })
+    await fetch(`${API_BASE}/documents/reingest`, {
+      method: 'POST',
+      headers: { 'X-Admin-Code': adminCode },
+    })
     setResetting(false)
   }
 
   const handleReset = async () => {
     if (!confirm('This will delete all indexed documents. Continue?')) return
     setResetting(true)
-    await fetch(`${API_BASE}/documents/reset`, { method: 'POST' })
+    await fetch(`${API_BASE}/documents/reset`, {
+      method: 'POST',
+      headers: { 'X-Admin-Code': adminCode },
+    })
     setResetting(false)
     await fetchDocuments()
   }
@@ -75,7 +89,7 @@ function AdminPage() {
     if (authenticated) {
       fetchDocuments()
     }
-  }, [authenticated])
+  }, [authenticated, adminCode])
 
   if (!authenticated) {
     return (
