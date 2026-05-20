@@ -9,7 +9,7 @@ echo "✅ Qdrant ready → http://localhost:6333/dashboard"
 
 echo "🐍 Starting backend..."
 cd backend
-python -m uvicorn main:app --reload --port 8000 &
+python -m uvicorn main:app --reload --port 8001 &
 BACKEND_PID=$!
 cd ..
 
@@ -23,8 +23,8 @@ echo ""
 echo "╔══════════════════════════════════════╗"
 echo "║       corp-mind-ai  PoC v2           ║"
 echo "║                                      ║"
-echo "║  App:     http://localhost:5173      ║"
-echo "║  API:     http://localhost:8000/docs ║"
+echo "║  App:     http://localhost:5174      ║"
+echo "║  API:     http://localhost:8001/docs ║"
 echo "║  Qdrant:  http://localhost:6333      ║"
 echo "╚══════════════════════════════════════╝"
 
