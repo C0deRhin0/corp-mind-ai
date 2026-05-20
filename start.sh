@@ -27,7 +27,7 @@ fi
 echo "  → Starting Backend..."
 cd "$(dirname "$0")/codebase/backend"
 source venv/bin/activate
-nohup python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 > /tmp/backend.log 2>&1 &
+nohup python3 -m uvicorn main:app --host 0.0.0.0 --port 8001 > /tmp/backend.log 2>&1 &
 cd ../..
 
 # Start Frontend
@@ -41,8 +41,8 @@ sleep 3
 echo ""
 echo "✅ All services started!"
 echo ""
-echo "  📱 App:       http://localhost:5173"
-echo "  📚 API Docs:  http://localhost:8000/docs"
+echo "  📱 App:       http://localhost:5174"
+echo "  📚 API Docs:  http://localhost:8001/docs"
 echo "  🗄️  Qdrant:   http://localhost:6333/dashboard"
 echo ""
 echo "Press Ctrl+C to stop, or run: ./stop.sh"
