@@ -15,7 +15,7 @@ services:
       - "8001:8000"
     environment:
       - QDRANT_URL=http://qdrant:6333
-      - OLLAMA_URL=http://host-gateway:11434
+      - OLLAMA_URL=http://host.docker.internal:11434
       - ADMIN_CODE=${ADMIN_CODE:-}
       - MAX_FILE_SIZE_MB=${MAX_FILE_SIZE_MB:-50}
       - DOCS_DIR=${DOCS_DIR:-/app/documents}
@@ -23,8 +23,6 @@ services:
       - ./documents:/app/documents
     depends_on:
       - qdrant
-    extra_hosts:
-      - "host-gateway:host-gateway"   # lets container reach Ollama on host
 
   frontend:
     build:
