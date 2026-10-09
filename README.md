@@ -2,6 +2,28 @@
 
 A secure, internal AI assistant (NuecAI) that answers questions using company documents with high accuracy, source traceability, and full on-premise operation.
 
+## Document ingestion and answer flow
+
+Ingestion and answering share Qdrant but run independently. Keep the embedding model identical on both paths and inspect the sources alongside each answer.
+
+```mermaid
+flowchart LR
+D["PDF · DOCX · TXT · Markdown"]:::source --> I["Load and chunk<br/>offline ingestion"]:::process
+    I --> E["Dense embeddings<br/>and sparse terms"]:::process
+    E --> Q[("Qdrant<br/>hybrid index")]:::store
+    U["Question from React UI"]:::source --> A["FastAPI<br/>RRF retrieval"]:::process
+    Q --> A
+    A --> L["Ollama<br/>grounded generation"]:::process
+    L --> C["Streamed answer<br/>source excerpts and citations"]:::result
+    classDef source fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e
+    classDef process fill:#ede9fe,stroke:#7c3aed,color:#3b0764
+    classDef store fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef review fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef result fill:#f1f5f9,stroke:#475569,color:#0f172a
+```
+
+Use [USAGE.md](USAGE.md) for ingestion and troubleshooting. A running frontend proves the interface loads; document retrieval and generation also require Qdrant, the embedding model, and Ollama.
+
 ## Features
 
 - **Hybrid Search**: Combines semantic (vector) and keyword (BM25) search via Qdrant's native RRF fusion for accurate results
@@ -13,26 +35,6 @@ A secure, internal AI assistant (NuecAI) that answers questions using company do
 - **Search History**: Recent queries are saved locally for quick re-asking
 - **Conversation History**: Previous conversations are persisted in localStorage
 - **Easy Ingestion**: Drop documents in a folder, run one command to index them
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  SYSTEM A: INGESTION PIPELINE (admin only, runs offline)   │
-│                                                             │
-│  /data/docs/  ──► loader.py ──► chunker.py ──► embedder.py │
-│                                                    │        │
-│                                            Qdrant HTTP API  │
-│                                            (upsert vectors) │
-└────────────────────────────────────────────────┬────────────┘
-                                                  │  shared Qdrant
-┌────────────────────────────────────────────────▼────────────┐
-│  SYSTEM B: QUERY APP (company-facing, always running)       │
-│                                                             │
-│  Browser ──► React UI ──► FastAPI ──► Qdrant (query only)  │
-│                                  └──► Ollama (generate)     │
-└─────────────────────────────────────────────────────────────┘
-```
 
 ## Tech Stack
 
@@ -116,7 +118,7 @@ corp-mind-ai/
 Create a `.env` file in the project root:
 
 ```env
-ADMIN_CODE=NuecAI-ADMIN-2026
+ADMIN_CODE=replace-with-a-private-local-code
 MAX_FILE_SIZE_MB=50
 DOCS_DIR=./documents
 ```
@@ -189,10 +191,14 @@ Access at: `http://localhost:5174/#/admin`
 | Service | URL |
 |---------|-----|
 | App (UI) | http://localhost:5174 |
-| API Docs (Swagger) | http://localhost:8001/docs |
+| API Docs (Swagger) | http://localhost:8002/docs |
 | Full Docker Compose UI | http://localhost:3000 |
 | Qdrant Dashboard | http://localhost:6333/dashboard |
 
 ## License
 
 MIT
+
+## Local development port override
+
+The Vite proxy targets the backend on port **8002**. With the existing backend virtual environment installed, run `./scripts/run-backend-local.sh` in one terminal and `npm run dev` from `frontend/` in another. The helper binds the API to `127.0.0.1` and writes its log to `/tmp/corp-mind-backend.log`. Docker Compose retains its own port mapping.
