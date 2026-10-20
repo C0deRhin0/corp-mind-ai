@@ -202,3 +202,13 @@ MIT
 ## Local development port override
 
 The Vite proxy targets the backend on port **8002**. With the existing backend virtual environment installed, run `./scripts/run-backend-local.sh` in one terminal and `npm run dev` from `frontend/` in another. The helper binds the API to `127.0.0.1` and writes its log to `/tmp/corp-mind-backend.log`. Docker Compose retains its own port mapping.
+
+## Captures
+
+Document workspace preview. Retrieval and generation not exercised.
+
+![Running frontend · empty document workspace; retrieval not exercised](docs/screenshots/workspace.webp)
+
+![Running frontend · document administration entry screen](docs/screenshots/admin.webp)
+
+Full capture descriptions and provenance: [captures.json](docs/screenshots/captures.json).

@@ -1,0 +1,20 @@
+{
+  "project": "Corp Mind AI",
+  "kind": "Interface",
+  "note": "Document workspace preview. Retrieval and generation not exercised.",
+  "capturedAt": "2026-10-23T05:32:40.874Z",
+  "screens": [
+    {
+      "file": "workspace.webp",
+      "caption": "Running frontend · empty document workspace; retrieval not exercised",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "file": "admin.webp",
+      "caption": "Running frontend · document administration entry screen",
+      "width": 1440,
+      "height": 1000
+    }
+  ]
+}
